@@ -1,0 +1,245 @@
+#!/usr/bin/env bash
+
+# TODO
+# - Publish in GitHub
+# - Add support for other distros
+#   - container_pull_tar() should accept a distro argument or a tarball URL
+# - Add support for starting/stopping
+# - Add support for enabling/disabling
+# - Add supporting for container booting
+# - Add support for debootstrap variants
+# - Check the required tools are installed
+# - User provisioning
+# - Home directory mounting
+# - Bind sockets, audio, display servers and authority
+
+if [ -z "${SUDO_USER}" ]; then
+    echo "ERROR! You must use sudo to run this script: sudo ./$(basename "${0}")"
+    exit 1
+fi
+
+readonly MACHINECTL_VER=$(machinectl --version | head -n1 | awk '{ print $2 }')
+readonly MACHINE_DIR="/var/lib/machines"
+readonly MACHINESPAWN_CACHE="/var/cache/machinespawn"
+readonly BOOTSTRAP_CACHE="${MACHINESPAWN_CACHE}/bootstrap"
+readonly PULLTAR_CACHE="${MACHINESPAWN_CACHE}/pull-tar"
+mkdir -p "${BOOTSTRAP_CACHE}" 2>/dev/null || true
+mkdir -p "${PULLTAR_CACHE}" 2>/dev/null || true
+
+function download_file() {
+    local URL="${1}"
+    local FILE="${URL##*/}"
+    local NAME="${2}"
+
+    if ! wget --quiet --show-progress --progress=bar:force:noscroll "${URL}" -O "${BOOTSTRAP_CACHE}/${FILE}"; then
+        echo "Failed to download ${URL}. Deleting ${BOOTSTRAP_CACHE}/${FILE}..."
+        rm "${BOOTSTRAP_CACHE}/${FILE}" 2>/dev/null
+        exit 1
+    fi
+}
+
+function container_bootstrap() {
+    local DISTRO_FULL="${1}"
+    local NAME="${2}"
+    local ARCH=""
+    local ARCHIVE=""
+    local COMPONENTS=""
+    local REPO=""
+    local DISTRO_NAME=$(echo "${DISTRO_FULL}" | cut -d'-' -f1)
+    local DISTRO_VERSION=$(echo "${DISTRO_FULL}" | cut -d'-' -f2)
+    local DISTRO_RELEASE=""
+
+    # TODO: Default to the host architecture
+    if [ -n "${3}" ]; then
+        ARCH="${3}"
+    else
+        ARCH="amd64"
+    fi
+
+    case "${ARCH}" in
+        amd64|i386|armhf|arm64) true;;
+        *) echo "ERROR! Unsupported architecture: ${ARCH}"; exit 1;;
+    esac
+
+    #TODO: Gate i386 on Ubuntu 18.04 and later
+
+    case "${DISTRO_NAME}" in
+        debian) ARCHIVE="deb.debian.org/debian/"
+                COMPONENTS="main,contrib,non-free"
+                case "${DISTRO_VERSION}" in
+                    8) DISTRO_RELEASE="jessie";;
+                    9) DISTRO_RELEASE="stretch";;
+                    10) DISTRO_RELEASE="buster";;
+                    11) DISTRO_RELEASE="bullseye";;
+                    12) DISTRO_RELEASE="bookworm";;
+                    *) echo "ERROR! Unsupported Debian version: ${DISTRO_VERSION}";
+                       exit 1;;
+                esac
+                ;;
+        ubuntu) case "${ARCH}" in
+                    amd64|i386) ARCHIVE="archive.ubuntu.com/ubuntu/";;
+                    *) ARCHIVE="ports.ubuntu.com/";;
+                esac
+                COMPONENTS="main,restricted,universe,multiverse"
+                case "${DISTRO_VERSION}" in
+                    16.04) DISTRO_RELEASE="xenial";;
+                    18.04) DISTRO_RELEASE="bionic";;
+                    20.04) DISTRO_RELEASE="focal";;
+                    22.04) DISTRO_RELEASE="jammy";;
+                    22.10) DISTRO_RELEASE="kinetic";;
+                    *) echo "ERROR! Unsupported Ubuntu version: ${DISTRO_VERSION}";
+                       exit 1;;
+                esac
+                ;;
+        *) echo "ERROR! Unknown distro: ${DISTRO_NAME}"
+           exit 1;;
+    esac
+
+    local R="${BOOTSTRAP_CACHE}/${DISTRO_FULL}-${ARCH}"
+    if [ ! -d "${R}" ]; then
+        apt-get -y install debootstrap systemd-container debian-archive-keyring ubuntu-keyring
+
+        if pidof apt-cacher-ng; then
+            REPO="http://localhost:3142/${ARCHIVE}"
+        else
+            REPO="http://${ARCHIVE}"
+        fi
+
+        debootstrap \
+            --arch="${ARCH}" \
+            --components="${COMPONENTS}" \
+            --include=nano,systemd-container \
+            "${DISTRO_RELEASE}" "${R}" "${REPO}"
+
+        # Make sure the container has a machine-id
+        systemd-machine-id-setup --root "${R}" --print
+        echo "127.0.0.1    localhost ${NAME}" > "${R}/etc/hosts"
+
+        # Set locale to C.UTF-8 by default.
+        # https://git.launchpad.net/livecd-rootfs/tree/live-build/auto/build#n159
+        echo "LANG=C.UTF-8" > "${R}/etc/default/locale"
+
+        case "${DISTRO_NAME}" in
+            debian) echo "deb http://${ARCHIVE} ${DISTRO_RELEASE} ${COMPONENTS//,/ }" > "${R}/etc/apt/sources.list";;
+            ubuntu) echo "deb http://${ARCHIVE} ${DISTRO_RELEASE} ${COMPONENTS//,/ }
+deb http://${ARCHIVE} ${DISTRO_RELEASE}-updates ${COMPONENTS//,/ }
+deb http://${ARCHIVE} ${DISTRO_RELEASE}-backports ${COMPONENTS//,/ }
+deb http://${ARCHIVE} ${DISTRO_RELEASE}-security ${COMPONENTS//,/ }" > "${R}/etc/apt/sources.list";;
+        esac
+    else
+        echo "WARNING! ${R} already exists!"
+    fi
+    machinectl import-fs "${R}" "${NAME}"
+}
+
+function container_pull_tar() {
+    local URL="${1}"
+    local NAME="${2}"
+
+    # Work around systemd bug
+    #  - https://bugs.launchpad.net/ubuntu/+source/systemd/+bug/1977630
+    case "${MACHINECTL_VER}" in
+        249) download_file "${URL}"
+             machinectl import-tar "${PULLTAR_CACHE}/${URL##*/}" "${NAME}";;
+        *) machinectl pull-tar "${URL}" "${NAME}" --verify=no;;
+    esac
+}
+
+function container_remove() {
+    local NAME="${1}"
+    machinectl remove "${NAME}"
+}
+
+function container_list() {
+    machinectl list-images
+}
+
+function container_clean_bootstrap() {
+    local NAME="${1}"
+    if [ -n "${NAME}" ] && [ -d "${BOOTSTRAP_CACHE}/${NAME}" ]; then
+        rm -rf "${BOOTSTRAP_CACHE}/${NAME}"
+    fi
+}
+
+function container_run() {
+    local APT_CACHE_IP=""
+    local CMD="/bin/bash"
+    local R="${MACHINE_DIR}/${1}"
+
+    if [ ! -d "${R}" ]; then
+        echo "ERROR! Container ${R} does not exist!"
+        exit 1
+    fi
+
+    if [ -n "${2}" ]; then
+        CMD="${2}"
+    fi
+
+    APT_CACHE_IP=$(ip route get 1.1.1.1 | head -n 1 | cut -d' ' -f 7)
+
+    if pidof -q apt-cacher-ng && [ -d "${R}/etc/apt/apt.conf.d" ]; then
+        echo "Acquire::http { Proxy \"http://${APT_CACHE_IP}:3142\"; }" > "${R}/etc/apt/apt.conf.d/90cache"
+    fi
+
+    echo "nameserver 1.1.1.1" > "/tmp/resolv.conf"
+    systemd-nspawn \
+        --bind-ro="/tmp/resolv.conf":/etc/resolv.conf \
+        --chdir=/root \
+        --directory "${R}" \
+        --hostname="${NAME}" \
+        --machine="${NAME}" \
+        --resolv-conf=off \
+        "${CMD}"
+
+    if [ -e "${R}/etc/apt/apt.conf.d/90cache" ]; then
+        rm -f "${R}/etc/apt/apt.conf.d/90cache"
+    fi
+}
+
+function usage() {
+    echo "Usage: $(basename "${0}") [command]"
+    exit
+}
+
+case "${1}" in
+    bootstrap)
+        if [ -z "${2}" ] || [ -z "${3}" ]; then
+            echo "ERROR! You must specify a distro-release and container name!"
+            exit 1
+        else
+            container_bootstrap "${2}" "${3}" "${4}"
+        fi;;
+    clean-bootstrap)
+        if [ -z "${2}" ]; then
+            echo "ERROR! You must specify a bootstrap cache!"
+            exit 1
+        else
+            container_clean_bootstrap "${2}"
+        fi;;
+    list|list-images)
+        container_list;;
+    pull-tar)
+        if [ -z "${2}" ] || [ -z "${3}" ]; then
+            echo "ERROR! You must specify a distro tarball URL and container name!"
+            exit 1
+        else
+            container_pull_tar "${2}" "${3}"
+        fi;;
+    remove)
+        if [ -z "${2}" ]; then
+            echo "ERROR! You must specify a container name!"
+            exit 1
+        else
+            container_remove "${2}"
+        fi;;
+    run)
+        if [ -z "${2}" ]; then
+            echo "ERROR! You must specify a container name!"
+            exit 1
+         else
+             container_run "${2}" "${3}"
+         fi;;
+    *)  echo "ERROR! You must specify an action: bootstrap, clean-cache, pull-tar, remove, run"
+        usage
+        exit 1;;
+esac
