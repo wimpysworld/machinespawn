@@ -171,8 +171,9 @@ function container_run() {
         exit 1
     fi
 
+    # Strip the container name from arguments
     if [ -n "${2}" ]; then
-        CMD="${2}"
+        shift
     fi
 
     APT_CACHE_IP=$(ip route get 1.1.1.1 | head -n 1 | cut -d' ' -f 7)
@@ -189,7 +190,7 @@ function container_run() {
         --hostname="${NAME}" \
         --machine="${NAME}" \
         --resolv-conf=off \
-        "${CMD}"
+        "${@}"
 
     if [ -e "${R}/etc/apt/apt.conf.d/90cache" ]; then
         rm -f "${R}/etc/apt/apt.conf.d/90cache"
@@ -237,7 +238,14 @@ case "${1}" in
             echo "ERROR! You must specify a container name!"
             exit 1
          else
-             container_run "${2}" "${3}"
+            # Strip the script name from arguments
+            shift
+            # Get the container name from arguments
+            NAME="${1}"
+
+            # Strip the container name from arguments
+            shift
+            container_run "${NAME}" "${@}"
          fi;;
     *)  echo "ERROR! You must specify an action: bootstrap, clean-cache, pull-tar, remove, run"
         usage
