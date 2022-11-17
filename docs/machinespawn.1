@@ -14,7 +14,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "MACHINESPAWN" "1" "November 16, 2022" "machinespawn" "machinespawn Manual"
+.TH "MACHINESPAWN" "1" "November 17, 2022" "machinespawn" "machinespawn Manual"
 .hy
 .SH Machinespawn
 .PP
@@ -22,22 +22,37 @@ Quickly stand up systemd_nspawn containers
 .SS Introduction
 .PP
 A nifty and performant way to quickly create, stand up or manage
-\f[V]systemd_nspawn\f[R] (https://www.freedesktop.org/software/systemd/man/systemd-nspawn.html)
+\f[V]systemd-nspawn\f[R] (https://www.freedesktop.org/software/systemd/man/systemd-nspawn.html)
 containers, \f[V]machinespawn\f[R] uses
 \f[V]debootstrap\f[R] (https://wiki.debian.org/Debootstrap) and
 \f[V]machinectl\f[R] (https://www.freedesktop.org/software/systemd/man/machinectl.html)
 and
-\f[V]systemd_nspawn\f[R] (https://www.freedesktop.org/software/systemd/man/systemd-nspawn.html)
+\f[V]systemd-nspawn\f[R] (https://www.freedesktop.org/software/systemd/man/systemd-nspawn.html)
 to build run and remove minimal OS images.
 It is useful for that, and also as a stage to quickly build custom
 container or ISO images.
-.SS Warning :warning:
 .PP
-It is currently a work-in-progress \[u1F6A7] under heavy and rapid
+This project is currently a work-in-progress \[u1F6A7] and under active
 development so treat as alpha software and approach with caution
-\[u1F6D1].
-However is already key part of the Ubuntu
-Butterfly (https://github.com/butterfly-garden) build process.
+\[u1F6D1] However \f[V]machinespawn\f[R] is already key part of the
+Ubuntu Butterfly \[u1F98B] (https://github.com/butterfly-garden) build
+process (https://github.com/butterfly-garden/image-build).
+.SS Participate
+.PP
+We have a Discord for this project:
+[IMAGE: Discord (https://img.shields.io/discord/712850672223125565?color=0C306A&label=WimpysWorld%20Discord&logo=Discord&logoColor=ffffff&style=flat-square)] (https://discord.gg/sNmz3uw)
+.PP
+To see it in action, or to watch it becoming, you can watch these videos
+where I go from an idea to a working full-featured prototype of
+\f[V]machinespawn\f[R].
+.PP
+[IMAGE: machinespawn!
+\[u1F427] Dev tooling from concept to production
+\[u1F9D1]\[u200D]\[u1F4BB] (https://img.youtube.com/vi/-bQQ6QlXpJQ/0.jpg)] (https://www.youtube.com/watch?v=-bQQ6QlXpJQ)
+.PP
+I live stream the development of \f[V]machinespawn\f[R] and other
+project on Wimpy\[cq]s World Twitch
+channel (https://twitch.tv/WimpysWorld).
 .SS Requirements
 .PP
 This script relies on utilities, many of which are typically already
@@ -46,28 +61,38 @@ The following will ensure you have all you need:
 .IP
 .nf
 \f[C]
-sudo apt-get install binutils iproute2 systemd-container wget unzip
-# optionally also
-# open-infrastructure-container-tools
+sudo apt-get install debootstrap binutils iproute2 systemd-container wget
+\f[R]
+.fi
+.SS Caching Proxy \f[I](optional)\f[R]
+.PP
+If \f[V]apt-cacher-ng\f[R] is installed on the host
+\f[V]machinespawn\f[R] will automatically detect its presence and use it
+for container bootstrapping and executing commands inside the container
+with \f[V]run\f[R].
+Install and configure \f[V]apt-cache-ng\f[R] as follows:
+.IP
+.nf
+\f[C]
+sudo apt-get install apt-cacher-ng
 \f[R]
 .fi
 .PP
-Specifically it requires:
-.IP \[bu] 2
-bash
-.IP \[bu] 2
-debootstrap (https://wiki.debian.org/Debootstrap)
-.IP \[bu] 2
-ip
-.IP \[bu] 2
-systemd-nspawn
-.IP \[bu] 2
-machinectl (https://www.freedesktop.org/software/systemd/man/machinectl.html)
-.IP \[bu] 2
-wget (depending on version of machinctl installed)
-.SS Supported OS images
+Create \f[V]/etc/apt-cacher-ng/zz_debconf.conf\f[R] with the following
+in it:
+.IP
+.nf
+\f[C]
+PassThroughPattern: .*
+\f[R]
+.fi
 .PP
-Currently the following OS Releases are supported:
+Once the above \f[V]PassThroughPattern\f[R] is set,
+\f[V]apt-cacher-ng\f[R] will proxy but not cache objects stored on
+SSL/TLS repositories.
+.SS Supported distros
+.PP
+Currently the following distros are supported:
 .IP \[bu] 2
 Debian Releases
 .RS 2
@@ -108,60 +133,67 @@ i386
 armhf
 .IP \[bu] 2
 arm64
-.SS Usage
+.SH Usage
 .PP
 \f[V]machinespawn\f[R] currently needs to be run as root via
 \f[V]sudo\f[R]
 .IP
 .nf
 \f[C]
-Usage: sudo machinespawn [command]
+sudo machinespawn [command]
 \f[R]
 .fi
 .SS Commands
-.SS bootstrap
+.SS \f[V]bootstrap\f[R]
 .PP
 Build a machine from scratch.
 .PP
 The first build of a machine type and architecture may be quite heavy on
-time and resource usage, but intelligent cacheing, together with
+time and resource usage, but intelligent caching, together with
 detection and use of local package caching proxies, should make this as
 efficient as possible and significantly reduce subsequent builds or
-re-builds
+re-builds.
+.PP
+The following bootstrap a container called `bob' using Ubuntu 22.04
+\f[I](Jammy Jellyfish)\f[R] as the base.
 .IP
 .nf
 \f[C]
-sudo machinespawn ubuntu-jammy bread
+sudo machinespawn ubuntu-22.04 bob
 \f[R]
 .fi
 .PP
-will build and bootstrap a container called \f[V]bread\f[R] using a base
-\f[B]ubuntu 22.04 (jammy)\f[R] image
-.SS list
+Here\[cq]s an example that would bootstrap a Debian 11 container called
+`fred':
+.IP
+.nf
+\f[C]
+sudo machinespawn debian-11 fred
+\f[R]
+.fi
+.SS \f[V]list\f[R]
 .PP
 List the existing images (by default these will be found in
 \f[V]/var/lib/machines/\f[R])
-.SS run
+.SS \f[V]run\f[R]
 .PP
-Spawn the container
+Execute commands inside the container or start an interactive shell.
 .IP
 .nf
 \f[C]
-sudo machinespawn run bread
+sudo machinespawn run bob /usr/bin/bash
 \f[R]
 .fi
-.PP
-Without parameters you will be dropped into a root \f[V]bash\f[R] shell
-.SS clean-cache
+.SS \f[V]clean-cache\f[R]
 .PP
 Remove cached content from \f[V]/var/cache/machinespawn\f[R].
 This will release space taken by downloaded packages at the expense of
 needing to re-download if required.
-.SS pull-tar
+.SS \f[V]pull-tar\f[R]
 .IP
 .nf
 \f[C]
-machinespawn pull-tar  <URL> <Machine Name>
+machinespawn pull-tar <URL> <Machine Name>
 \f[R]
 .fi
 .PP
@@ -175,19 +207,15 @@ must refer to a .tar, .tar.gz, .tar.xz or .tar.bz2 archive file
 sudo macheinespawn pull-tar  https://download.fedoraproject.org/pub/fedora/linux/releases/36/Cloud/x86_64/images/Fedora-Cloud-Base-36-1.5.x86_64.raw.xz FedoraCloudBase36
 \f[R]
 .fi
-.SS remove
+.SS \f[V]remove\f[R]
 .PP
-completely remove a machine from \f[V]/var/lib/machines/\f[R]
-.PP
-There is a channel for this project at
-Discord (https://discord.gg/sNmz3uw)
+Completely remove a machine from \f[V]/var/lib/machines/\f[R]
 .SS Reference
 .IP \[bu] 2
-debootstrap (https://wiki.debian.org/Debootstrap)
+debbootstrap (https://wiki.debian.org/Debootstrap)
 .IP \[bu] 2
 machinectl (https://www.freedesktop.org/software/systemd/man/machinectl.html)
 .IP \[bu] 2
 systemd-nspawn (https://www.freedesktop.org/software/systemd/man/systemd-nspawn.html)
-homepage (https://open-infrastructure.net/software/compute-tools)
 .SH AUTHORS
 Martin Wimpress.
