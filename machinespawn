@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
 # TODO
-# - Publish in GitHub
 # - Add support for other distros
 #   - container_pull_tar() should accept a distro argument or a tarball URL
 # - Add support for starting/stopping
