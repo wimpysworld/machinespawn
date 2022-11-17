@@ -3,6 +3,15 @@
 # TODO
 # - Add support for other distros
 #   - container_pull_tar() should accept a distro argument or a tarball URL
+#   - Fedora, from Det_Conan_Kudo:
+#       Formula: https://download.fedoraproject.org/pub/fedora/linux/releases/$releasever/Container/$basearch/images/
+#       For dev releases: https://download.fedoraproject.org/pub/fedora/linux/development/$releasever/Container/$basearch/images/
+#       $releasever can be a release version (35, 36, 37) or "rawhide"
+#       $basearch can be "x86_64", "aarch64"
+#       you're going to have to be "clever" about figuring out the filename
+#       You can also use the releases.json code you wrote for quickget to get the container images
+#       https://npmccallum.gitlab.io/post/cross-architecture-roots-with-dnf/
+#       https://wiki.mageia.org/en/Using_DNF#Setting_up_a_container_for_a_non-native_architecture
 # - Add support for starting/stopping
 # - Add support for enabling/disabling
 # - Add supporting for container booting
