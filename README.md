@@ -40,7 +40,7 @@ sudo apt-get install debootstrap binutils iproute2 systemd-container wget
 If `apt-cacher-ng` is installed on the host `machinespawn` will automatically detect its presence and use it for container bootstrapping and executing commands inside the container with `run`. Install and configure `apt-cache-ng` as follows:
 
 ```bash
-sudo apt-get install apt-cache-ng
+sudo apt-get install apt-cacher-ng
 ```
 
 Create `/etc/apt-cacher-ng/zz_debconf.conf` with the following in it:
