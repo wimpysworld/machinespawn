@@ -1,13 +1,16 @@
-<h1 align="center">
-  <img src=".github/logo.png" alt="Machinespawn" width="256" />
-  <br />
-  Machinespawn
-</h1>
+---
+author: Martin Wimpress
+date: November 16, 2022
+footer: machinespawn
+header: machinespawn Manual
+section: 1
+title: MACHINESPAWN
+---
 
-<p align="center"><b>Quickly stand up <em>systemd_nspawn</em> containers
-</b></p>
-<div align="center"><img src=".github/screenshot.png" alt="Machinespawn Screenshot" /></div>
-<p align="center">Made with 💝 for <img src=".github/tux.png" align="top" width="18" /></p>
+
+# Machinespawn
+
+Quickly stand up <em>systemd_nspawn</em> containers
 
 ## Introduction
 
@@ -18,7 +21,7 @@ It is useful for that, and also as a stage to quickly build custom container or 
 
 ## Warning :warning:
 It is currently a  work-in-progress 🚧  under heavy and rapid development so treat as alpha software and approach with caution 🛑. However is already key part
-of the [Ubuntu Butterfly :butterfly:](https://github.com/butterfly-garden) [build process](https://github.com:butterfly-garden/image-build).
+of the [Ubuntu Butterfly](https://github.com/butterfly-garden) [build process](https://github.com:butterfly-garden/image-build).
 
 ## Requirements
 
@@ -29,14 +32,15 @@ The following will ensure you have all you need:
     # optionally also
     # open-infrastructure-container-tools
 
+
 Specifically it requires:
 
 * bash
 * [debootstrap](https://wiki.debian.org/Debootstrap)
 * ip
-* [systemd-nspawn](https://www.freedesktop.org/software/systemd/man/systemd-nspawn.html)
+* systemd-nspawn
 * [machinectl](https://www.freedesktop.org/software/systemd/man/machinectl.html)
-* wget (requirement depends on version of [machinectl](https://www.freedesktop.org/software/systemd/man/machinectl.html) available)
+* wget (depending on version of machinctl installed)
 
 ## Supported OS images
 
@@ -64,6 +68,7 @@ Containers can be built for the host architecture or cross-bootstrapped for the 
 * armhf
 * arm64
 
+
 ## Usage
 
 `machinespawn` currently needs to be run as root via `sudo`
@@ -81,11 +86,12 @@ together with detection and use of local package caching proxies, should make th
 
     sudo machinespawn ubuntu-jammy bread
 
-will build and bootstrap a container called `bread` using a base *ubuntu 22.04 (jammy)* image
+will build and bootstrap a container called `bread` using a base **ubuntu 22.04 (jammy)** image
 
 ### list
 
 List the existing images (by default these will be found in `/var/lib/machines/`)
+
 ### run
 
 Spawn the container
@@ -96,7 +102,7 @@ Without parameters you will be dropped into a root `bash` shell
 
 ### clean-cache
 
-Remove cached content from `/var/cache/machinespawn`. This will release significant space taken by downloaded packages and tar files at the expense of needing to re-download if required.
+Remove cached content from `/var/cache/machinespawn`. This will release space taken by downloaded packages at the expense of needing to re-download if required.
 
 ### pull-tar
 
@@ -112,15 +118,11 @@ Downloads a .tar container image from the specified URL, and makes it available 
 completely remove a machine from `/var/lib/machines/`
 
 
-We have a Discord for this project:
-[![Discord](https://img.shields.io/discord/712850672223125565?color=0C306A&label=WimpysWorld%20Discord&logo=Discord&logoColor=ffffff&style=flat-square)](https://discord.gg/sNmz3uw)
+There is a channel for this project at [Discord](https://discord.gg/sNmz3uw)
 
-To see it in action, or to watch it becoming, you can watch these videos where I go from an idea to a working full-featured prototype of `machinespawn`.
-
-[![machinespawn! 🐧 Dev tooling from concept to production 🧑‍💻](https://img.youtube.com/vi/-bQQ6QlXpJQ/0.jpg)](https://www.youtube.com/watch?v=-bQQ6QlXpJQ)
 
 ## Reference
 
 * [debootstrap](https://wiki.debian.org/Debootstrap)
 * [machinectl](https://www.freedesktop.org/software/systemd/man/machinectl.html)
-* [systemd-nspawn](https://www.freedesktop.org/software/systemd/man/systemd-nspawn.html)
+* [systemd-nspawn](https://www.freedesktop.org/software/systemd/man/systemd-nspawn.html) [homepage](https://open-infrastructure.net/software/compute-tools)

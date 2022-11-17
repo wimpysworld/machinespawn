@@ -25,19 +25,23 @@ of the [Ubuntu Butterfly :butterfly:](https://github.com/butterfly-garden) [buil
 This script relies on utilities, many of which are typically already installed on most Debian or Ubuntu systems.
 The following will ensure you have all you need:
 
-    sudo apt-get install binutils iproute2 systemd-container wget unzip
-    # optionally also
-    # open-infrastructure-container-tools
+    sudo apt-get install binutils mtools squashfs-tools wget unzip
 
 Specifically it requires:
 
-* bash
-* [debootstrap](https://wiki.debian.org/Debootstrap)
-* ip
-* [systemd-nspawn](https://www.freedesktop.org/software/systemd/man/systemd-nspawn.html)
-* [machinectl](https://www.freedesktop.org/software/systemd/man/machinectl.html)
-* wget (requirement depends on version of [machinectl](https://www.freedesktop.org/software/systemd/man/machinectl.html) available)
+    * bash
+    * [debbootstrap](https://wiki.debian.org/Debootstrap)
+    * wget
+    * ip
+    * systemd-nspawn
+    * machinectl
 
+We have a Discord for this project:
+[![Discord](https://img.shields.io/discord/712850672223125565?color=0C306A&label=WimpysWorld%20Discord&logo=Discord&logoColor=ffffff&style=flat-square)](https://discord.gg/sNmz3uw)
+
+To see it in action, or to watch it becoming, you can watch these videos where I go from an idea to a working full-featured prototype of `machinespawn`.
+
+[![machinespawn! 🐧 Dev tooling from concept to production 🧑‍💻](https://img.youtube.com/vi/-bQQ6QlXpJQ/0.jpg)](https://www.youtube.com/watch?v=-bQQ6QlXpJQ)
 ## Supported OS images
 
 Currently the following OS Releases are supported:
@@ -63,6 +67,22 @@ Containers can be built for the host architecture or cross-bootstrapped for the 
 * i386
 * armhf
 * arm64
+
+
+## TODOs
+
+These important features are not *yet* implemented here.
+ - [x] Publish in GitHub
+ - [ ] Add support for other distros
+   - container_pull_tar() should accept a distro argument or a tarball URL
+ - [ ] Add support for starting/stopping
+ - [ ] Add support for enabling/disabling
+ - [ ] Add supporting for container booting
+ - [ ] Add support for debootstrap variants
+ - [ ] Check the required tools are installed
+ - [ ] User provisioning
+ - [ ] Home directory mounting
+ - [ ] Bind sockets, audio, display servers and authority
 
 ## Usage
 
@@ -96,7 +116,7 @@ Without parameters you will be dropped into a root `bash` shell
 
 ### clean-cache
 
-Remove cached content from `/var/cache/machinespawn`. This will release significant space taken by downloaded packages and tar files at the expense of needing to re-download if required.
+Remove cached content from `/var/cache/machinespawn`. This will release space taken by downloaded packages at the expense of needing to re-download if required.
 
 ### pull-tar
 
@@ -112,15 +132,8 @@ Downloads a .tar container image from the specified URL, and makes it available 
 completely remove a machine from `/var/lib/machines/`
 
 
-We have a Discord for this project:
-[![Discord](https://img.shields.io/discord/712850672223125565?color=0C306A&label=WimpysWorld%20Discord&logo=Discord&logoColor=ffffff&style=flat-square)](https://discord.gg/sNmz3uw)
-
-To see it in action, or to watch it becoming, you can watch these videos where I go from an idea to a working full-featured prototype of `machinespawn`.
-
-[![machinespawn! 🐧 Dev tooling from concept to production 🧑‍💻](https://img.youtube.com/vi/-bQQ6QlXpJQ/0.jpg)](https://www.youtube.com/watch?v=-bQQ6QlXpJQ)
-
 ## Reference
 
-* [debootstrap](https://wiki.debian.org/Debootstrap)
+* [debbootstrap](https://wiki.debian.org/Debootstrap)
 * [machinectl](https://www.freedesktop.org/software/systemd/man/machinectl.html)
-* [systemd-nspawn](https://www.freedesktop.org/software/systemd/man/systemd-nspawn.html)
+* [systemd-nspawn]((https://www.freedesktop.org/software/systemd/man/systemd-nspawn.html)
