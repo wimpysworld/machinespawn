@@ -122,7 +122,6 @@ function container_bootstrap() {
 
         # Make sure the container has a machine-id
         systemd-machine-id-setup --root "${R}" --print
-        echo "127.0.0.1    localhost ${NAME}" > "${R}/etc/hosts"
 
         # Set locale to C.UTF-8 by default.
         # https://git.launchpad.net/livecd-rootfs/tree/live-build/auto/build#n159
@@ -139,6 +138,10 @@ deb http://${ARCHIVE} ${DISTRO_RELEASE}-security ${COMPONENTS//,/ }" > "${R}/etc
         echo "WARNING! ${R} already exists!"
     fi
     machinectl import-fs "${R}" "${NAME}"
+
+    # Make sure /etc/hosts is set for the imported machine
+    R="${MACHINE_DIR}/${NAME}"
+    echo "127.0.0.1    localhost ${NAME}" > "${R}/etc/hosts"
 }
 
 function container_pull_tar() {
