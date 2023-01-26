@@ -131,7 +131,7 @@ machinespawn pull-tar <URL> <Machine Name>
 Downloads a .tar container image from the specified URL, and makes it available under the specified local machine name. The URL must be of type "http://" or "https://", and must refer to a .tar, .tar.gz, .tar.xz or .tar.bz2 archive file
 
 ```bash
-sudo macheinespawn pull-tar  https://download.fedoraproject.org/pub/fedora/linux/releases/36/Cloud/x86_64/images/Fedora-Cloud-Base-36-1.5.x86_64.raw.xz FedoraCloudBase36
+sudo machinespawn pull-tar  https://download.fedoraproject.org/pub/fedora/linux/releases/36/Cloud/x86_64/images/Fedora-Cloud-Base-36-1.5.x86_64.raw.xz FedoraCloudBase36
 ```
 
 ### `remove`
