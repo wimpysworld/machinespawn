@@ -97,13 +97,13 @@ The first build of a machine type and architecture may be quite heavy on time an
 The following bootstrap a container called 'bob' using Ubuntu 22.04 *(Jammy Jellyfish)* as the base.
 
 ```bash
-sudo machinespawn ubuntu-22.04 bob
+sudo machinespawn bootstrap ubuntu-22.04 bob
 ```
 
 Here's an example that would bootstrap a Debian 11 container called 'fred':
 
 ```bash
-sudo machinespawn debian-11 fred
+sudo machinespawn bootstrap debian-11 fred
 ```
 
 ### `list`
