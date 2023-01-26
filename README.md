@@ -97,13 +97,13 @@ The first build of a machine type and architecture may be quite heavy on time an
 The following bootstrap a container called 'bob' using Ubuntu 22.04 *(Jammy Jellyfish)* as the base.
 
 ```bash
-sudo machinespawn ubuntu-22.04 bob
+sudo machinespawn bootstrap ubuntu-22.04 bob
 ```
 
 Here's an example that would bootstrap a Debian 11 container called 'fred':
 
 ```bash
-sudo machinespawn debian-11 fred
+sudo machinespawn bootstrap debian-11 fred
 ```
 
 ### `list`
@@ -131,7 +131,7 @@ machinespawn pull-tar <URL> <Machine Name>
 Downloads a .tar container image from the specified URL, and makes it available under the specified local machine name. The URL must be of type "http://" or "https://", and must refer to a .tar, .tar.gz, .tar.xz or .tar.bz2 archive file
 
 ```bash
-sudo macheinespawn pull-tar  https://download.fedoraproject.org/pub/fedora/linux/releases/36/Cloud/x86_64/images/Fedora-Cloud-Base-36-1.5.x86_64.raw.xz FedoraCloudBase36
+sudo machinespawn pull-tar  https://download.fedoraproject.org/pub/fedora/linux/releases/36/Cloud/x86_64/images/Fedora-Cloud-Base-36-1.5.x86_64.raw.xz FedoraCloudBase36
 ```
 
 ### `remove`
