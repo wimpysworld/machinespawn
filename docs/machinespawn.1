@@ -159,7 +159,7 @@ The following bootstrap a container called `bob' using Ubuntu 22.04
 .IP
 .nf
 \f[C]
-sudo machinespawn ubuntu-22.04 bob
+sudo machinespawn bootstrap ubuntu-22.04 bob
 \f[R]
 .fi
 .PP
@@ -168,7 +168,7 @@ Here\[cq]s an example that would bootstrap a Debian 11 container called
 .IP
 .nf
 \f[C]
-sudo machinespawn debian-11 fred
+sudo machinespawn bootstrap debian-11 fred
 \f[R]
 .fi
 .SS \f[V]list\f[R]
@@ -204,7 +204,7 @@ must refer to a .tar, .tar.gz, .tar.xz or .tar.bz2 archive file
 .IP
 .nf
 \f[C]
-sudo macheinespawn pull-tar  https://download.fedoraproject.org/pub/fedora/linux/releases/36/Cloud/x86_64/images/Fedora-Cloud-Base-36-1.5.x86_64.raw.xz FedoraCloudBase36
+sudo machinespawn pull-tar  https://download.fedoraproject.org/pub/fedora/linux/releases/36/Cloud/x86_64/images/Fedora-Cloud-Base-36-1.5.x86_64.raw.xz FedoraCloudBase36
 \f[R]
 .fi
 .SS \f[V]remove\f[R]
