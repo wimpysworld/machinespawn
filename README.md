@@ -6,6 +6,12 @@
   machinespawn
 </h1>
 
+# This project is discontinued ☠️
+
+**machinespwn was an interesting learning experience, but if you're looking for something similar that is feature complete, then I recommend the excellent [Distrobox](https://distrobox.it) with [Podman](https://podman.io/).**
+
+-----
+
 <p align="center"><b>Quickly stand up <em>systemd-nspawn</em> containers</b>
 <br />
 Made with 💝 for <img src=".github/ubuntu.png" align="top" width="20" /> & <img src=".github/debian.png" align="top" width="20" />
